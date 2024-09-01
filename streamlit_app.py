@@ -5,7 +5,7 @@ from collections import Counter
 from scipy.stats import hypergeom
 from statsmodels.stats.multitest import multipletests
 from goatools.base import get_godag
-
+import plotly.express as px
 import io
 
 
@@ -41,7 +41,7 @@ def extract_ancestors(go_id):
     return [go_id] + list(ancestors)
 
 
-def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None):
+def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=["regulation","CAAX"]):
     df['GOs'] = df.apply(extract_GO_terms, axis=1)
     GOs_background = df["GOs"].tolist()
     GOs_background = [item for sublist in GOs_background for item in sublist]
@@ -59,7 +59,7 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None):
         background = [x for x in background if int(x.split(" ")[-2][1:]) >= l]
     if d != 0:
         background = [x for x in background if int(x.split(" ")[-1][1:]) >= d]
-    background = [x for x in background if "regulation" not in x]
+    background = [x for x in background if not any(f in x for f in filtered)]
 
     col = "pvalue_refined" if refined else "pvalue"
     df_cut = df[df[col] < pvalue]
@@ -78,7 +78,7 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None):
         newGOs = [x for x in newGOs if int(x.split(" ")[-2][1:]) >= l]
     if d != 0:
         newGOs = [x for x in newGOs if int(x.split(" ")[-1][1:]) >= d]
-    newGOs = [x for x in newGOs if "regulation" not in x]
+    newGOs = [x for x in newGOs if not any(f in x for f in filtered)]
 
     GOs = Counter(newGOs)
     GOs_background = Counter(background)
@@ -121,17 +121,6 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None):
     dfGO = dfGO.sort_values(by='p-value', ascending=True)
     return dfGO
 
-
-import streamlit as st
-import pandas as pd
-import re
-from collections import Counter
-from scipy.stats import hypergeom
-from statsmodels.stats.multitest import multipletests
-import plotly.express as px
-
-
-# ... [previous code remains the same] ...
 
 def main():
     st.set_page_config(layout="wide")
