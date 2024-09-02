@@ -127,14 +127,14 @@ def main():
     st.title("Gene Enrichment Analysis App")
     st.markdown("""
     Questa app esegue l'analisi di arricchimento genico basata sui termini Gene Ontology (GO).
-    Carica il tuo file di dati genici e regola i parametri per eseguire l'analisi.
+    Carica il tuo file di dati genici (.csv o .xlsx) e regola i parametri per eseguire l'analisi. Ci può essere un numero variabile di colonne con termini GO, lo script estrae tutti i termini GO per ogni riga. Ci deve essere una colonna chiamata pvalue e opzionale una chiamata pvaluerefined
     """)
     use_default = st.checkbox("Usa la tabella dati di default", value=True)
 
     if use_default:
         #load file github https://github.com/DavideGotta/TESI/blob/master/operoniscorestream.csv
         uploaded_file = 'https://raw.githubusercontent.com/DavideGotta/TESI/master/operoniscorestream.csv'
-        st.info("Si sta utilizzando un file di dati di esempio. Deseleziona la casella qui sopra per caricare il tuo file.")
+        st.info("Deseleziona la casella qui sopra per caricare il tuo file.")
     else:
         uploaded_file = st.file_uploader("Choose a CSV or XLSX file", type=["csv", "xlsx"])
 
@@ -151,8 +151,8 @@ def main():
             col1, col2 = st.columns(2)
 
             with col1:
-                pvalue_threshold = st.slider("Select p-value threshold", 0.0, 1.0, 0.01, 0.001)
-                use_refined = st.checkbox("Use refined p-value", value=True)
+                pvalue_threshold = st.slider("Seleziona la soglia per il p-value", 0.0, 1.0, 0.01, 0.001)
+                use_refined = st.checkbox("Usa il p-value dello score raffinato (che usa l'informazione degli ortologhi)", value=True)
 
                 st.markdown("""
                 **Proprietà dei termini GO:**
