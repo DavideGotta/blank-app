@@ -124,7 +124,7 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=
 
 def main():
     st.set_page_config(layout="wide")
-    st.title("Gene Enrichment Analysis App")
+    st.title("Applicazione per Gene Enrichment Analysis di dati tabulari")
     st.markdown("""
     Questa app esegue l'analisi di arricchimento genico basata sui termini Gene Ontology (GO) usando come set i termini GO associati a un p-value sotto una certa soglia.
     Carica il tuo file di dati genici (.csv o .xlsx) e regola i parametri per eseguire l'analisi. Ci può essere un numero variabile di colonne con termini GO, lo script estrae tutti i termini GO per ogni riga. Ci deve essere una colonna chiamata pvalue e opzionale una chiamata pvalue_refined
@@ -156,11 +156,12 @@ def main():
 
                 st.markdown("""
                 **Proprietà dei termini GO:**
+                I termini GO troppo in alto nella gerarchia sono troppo generici e potrebbero risultare poco utili al fine dell'analisi, per questo si può filtrare in base alla posizione nella gerarchia di Gene Ontology.
                 - **Level**: La lunghezza del percorso più breve dal termine radice. I valori più bassi includono termini più generali.
                 - **Depth**: La lunghezza del percorso più lungo dal termine radice. I valori più alti includono termini più specifici.
                 """)
 
-                min_level = st.number_input("Min level per i termini GO", min_value=0, value=0, step=1)
+                min_level = st.number_input("Min level per i termini GO", min_value=0, value=4, step=1)
                 min_depth = st.number_input("Min depth per i termini GO", min_value=0, value=0, step=1)
 
             with col2:
