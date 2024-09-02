@@ -126,8 +126,8 @@ def main():
     st.set_page_config(layout="wide")
     st.title("Gene Enrichment Analysis App")
     st.markdown("""
-    Questa app esegue l'analisi di arricchimento genico basata sui termini Gene Ontology (GO).
-    Carica il tuo file di dati genici (.csv o .xlsx) e regola i parametri per eseguire l'analisi. Ci può essere un numero variabile di colonne con termini GO, lo script estrae tutti i termini GO per ogni riga. Ci deve essere una colonna chiamata pvalue e opzionale una chiamata pvaluerefined
+    Questa app esegue l'analisi di arricchimento genico basata sui termini Gene Ontology (GO) usando come set i termini GO associati a un p-value sotto una certa soglia.
+    Carica il tuo file di dati genici (.csv o .xlsx) e regola i parametri per eseguire l'analisi. Ci può essere un numero variabile di colonne con termini GO, lo script estrae tutti i termini GO per ogni riga. Ci deve essere una colonna chiamata pvalue e opzionale una chiamata pvalue_refined
     """)
     use_default = st.checkbox("Usa la tabella dati di default", value=True)
 
