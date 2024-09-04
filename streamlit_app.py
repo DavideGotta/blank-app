@@ -146,7 +146,7 @@ def main():
                 df = pd.read_excel(uploaded_file)
 
             st.subheader("Data Preview")
-            st.dataframe(df.head(), use_container_width=True)
+            st.dataframe(df, use_container_width=True)
 
             col1, col2 = st.columns(2)
 
