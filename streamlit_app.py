@@ -30,7 +30,7 @@ def extract_GO_terms(row):
     row_str = ' '.join(row.astype(str))
     go_terms = re.findall(r'GO:\d+', row_str)
     unique_go_terms = list(set(go_terms))
-    return unique_go_terms
+    return unique_go_terms, row['protein_id']
 
 
 def extract_ancestors(go_id):
@@ -41,16 +41,22 @@ def extract_ancestors(go_id):
     return [go_id] + list(ancestors)
 
 
-def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=["regulation","CAAX"]):
-    df['GOs'] = df.apply(extract_GO_terms, axis=1)
-    GOs_background = df["GOs"].tolist()
-    GOs_background = [item for sublist in GOs_background for item in sublist]
-    GOs_background = [item for sublist in (extract_ancestors(x) for x in GOs_background) for item in sublist]
+def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=["regulation"]):
+    df['GOs_and_protein'] = df.apply(extract_GO_terms, axis=1)
+
+    go_to_proteins = {}
 
     newGOs_background = []
-    for x in GOs_background:
-        GO = godag[x].namespace + " - " + godag[x].name + " L" + str(godag[x].level) + " D" + str(godag[x].depth)
-        newGOs_background.append(GO)
+    for i, row in df.iterrows():
+        for go in row['GOs_and_protein'][0]:
+            ancestors = extract_ancestors(go)
+            for ancestor in ancestors:
+                GO = godag[ancestor].namespace + " - " + godag[ancestor].name + " L" + str(
+                    godag[ancestor].level) + " D" + str(godag[ancestor].depth)
+                newGOs_background.append(GO)
+                if GO not in go_to_proteins:
+                    go_to_proteins[GO] = set(row['GOs_and_protein'][1])
+                go_to_proteins[GO].add(row['GOs_and_protein'][1])
 
     background = newGOs_background
     if namespaces:
@@ -59,14 +65,20 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=
         background = [x for x in background if int(x.split(" ")[-2][1:]) >= l]
     if d != 0:
         background = [x for x in background if int(x.split(" ")[-1][1:]) >= d]
-    background = [x for x in background if not any(f in x for f in filtered)]
+    background = [x for x in background if "regulation" not in x]
 
     col = "pvalue_refined" if refined else "pvalue"
     df_cut = df[df[col] < pvalue]
-    GOs = df_cut["GOs"]
+    GOs = df_cut["GOs_and_protein"].apply(lambda x: x[0]).tolist()
     GOs = [item for sublist in GOs for item in sublist]
     GOs = [item for sublist in (extract_ancestors(x) for x in GOs) for item in sublist]
-
+    # create new go_to_proteins that has only pids that are in df_cut['protein_id'].tolist()
+    new_go_to_proteins = {}
+    for go in go_to_proteins:
+        new_go_to_proteins[go] = go_to_proteins[go].intersection(
+            df_cut['GOs_and_protein'].apply(lambda x: x[1]).tolist())
+        new_go_to_proteins[go] = [pid + " (" + df.loc[df['protein_id'] == pid, 'product'].values[0] + ")" for pid in
+                                  new_go_to_proteins[go]]
     newGOs = []
     for x in GOs:
         GO = godag[x].namespace + " - " + godag[x].name + " L" + str(godag[x].level) + " D" + str(godag[x].depth)
@@ -86,7 +98,7 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=
     n = len(df_cut)
 
     if n == 0 or len(GOs) == 0:
-        st.warning("No GO terms meet the specified criteria. Try adjusting your filters.")
+        print("No GO terms meet the specified criteria. Try adjusting your filters.")
         return pd.DataFrame()
 
     p_values = {}
@@ -97,13 +109,16 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=
         x = GOs[go]
         if N > 0 and M > 0:
             enrichments[go] = (x / n) / (N / M)
+            observed_frequency = x / n
+            expected_frequency = N / M
+            enrichment_score = observed_frequency / expected_frequency
             p_values[go] = hypergeom.sf(x - 1, M, N, n)
         else:
             enrichments[go] = 0
             p_values[go] = 1
 
     if len(p_values) == 0:
-        st.warning("No valid GO terms for enrichment analysis. Try adjusting your filters.")
+        print("No valid GO terms for enrichment analysis. Try adjusting your filters.")
         return pd.DataFrame()
 
     pvals = list(p_values.values())
@@ -114,7 +129,8 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=
         'GO term': list(p_values.keys()),
         'p-value': list(p_values.values()),
         'corrected p-value Bonferroni': corrected_pvals_bonferroni,
-        'corrected p-value Benjamini-Hochberg': corrected_pvals_benjamini_hochberg
+        'corrected p-value Benjamini-Hochberg': corrected_pvals_benjamini_hochberg,
+        'associated_proteins': [', '.join(new_go_to_proteins.get(go, [])) for go in p_values.keys()]
     }
     dfGO = pd.DataFrame(data)
     dfGO['enrichment'] = dfGO['GO term'].map(enrichments)
