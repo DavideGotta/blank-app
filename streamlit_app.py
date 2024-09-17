@@ -182,7 +182,7 @@ def main():
             if st.button("Run Gene Enrichment Analysis"):
                 with st.spinner('Running analysis...'):
                     results = GO_enrichments(df, pvalue_threshold, refined=use_refined,
-                                             l=min_level, d=min_depth, namespaces=selected_namespaces, filtered=filtered_keywords)
+                                             l=min_level, d=min_depth, namespaces=selected_namespaces, filtered=selected_keywords)
 
                 if not results.empty:
                     st.subheader("Gene Enrichment Results")
