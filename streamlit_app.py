@@ -65,7 +65,6 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=
         background = [x for x in background if int(x.split(" ")[-2][1:]) >= l]
     if d != 0:
         background = [x for x in background if int(x.split(" ")[-1][1:]) >= d]
-    background = [x for x in background if "regulation" not in x]
 
     col = "pvalue_refined" if refined else "pvalue"
     df_cut = df[df[col] < pvalue]
