@@ -130,6 +130,18 @@ def main():
     Carica il tuo file di dati genici (.csv o .xlsx) e regola i parametri per eseguire l'analisi. Ci può essere un numero variabile di colonne con termini GO, lo script estrae tutti i termini GO per ogni riga. Ci deve essere una colonna chiamata pvalue e opzionale una chiamata pvalue_refined
     """)
     use_default = st.checkbox("Usa la tabella dati di default", value=True)
+    # Add a new section for keyword filtering
+    st.markdown("**Filtra termini GO per parole chiave:**")
+    default_keywords = ["regulation"]
+    additional_keywords = st.text_input("Aggiungi parole chiave separate da virgola", "")
+    use_default_keyword = st.checkbox("Filtra per 'regulation'", value=True)
+    
+    # Combine default and additional keywords
+    filtered_keywords = default_keywords if use_default_keyword else []
+    if additional_keywords:
+        filtered_keywords.extend([kw.strip() for kw in additional_keywords.split(",")])
+
+
 
     if use_default:
         #load file github https://github.com/DavideGotta/TESI/blob/master/operoniscorestream.csv
@@ -175,7 +187,7 @@ def main():
             if st.button("Run Gene Enrichment Analysis"):
                 with st.spinner('Running analysis...'):
                     results = GO_enrichments(df, pvalue_threshold, refined=use_refined,
-                                             l=min_level, d=min_depth, namespaces=selected_namespaces)
+                                             l=min_level, d=min_depth, namespaces=selected_namespaces, filtered=filtered_keywords)
 
                 if not results.empty:
                     st.subheader("Gene Enrichment Results")
