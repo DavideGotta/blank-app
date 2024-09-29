@@ -51,7 +51,7 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=
         for go in row['GOs_and_protein'][0]:
             ancestors = extract_ancestors(go)
             for ancestor in ancestors:
-                GO = godag[ancestor].namespace + " - " + godag[ancestor].name + " L" + str(
+                GO = godag[ancestor].id + " " +godag[ancestor].namespace + " - " + godag[ancestor].name + " L" + str(
                     godag[ancestor].level) + " D" + str(godag[ancestor].depth)
                 newGOs_background.append(GO)
                 if GO not in go_to_proteins:
