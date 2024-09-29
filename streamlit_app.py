@@ -80,7 +80,7 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=
                                   new_go_to_proteins[go]]
     newGOs = []
     for x in GOs:
-        GO = godag[x].namespace + " - " + godag[x].name + " L" + str(godag[x].level) + " D" + str(godag[x].depth)
+        GO = godag[x].id + godag[x].namespace + " - " + godag[x].name + " L" + str(godag[x].level) + " D" + str(godag[x].depth)
         newGOs.append(GO)
 
     if namespaces:
