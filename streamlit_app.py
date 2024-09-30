@@ -133,6 +133,7 @@ def GO_enrichments(df, pvalue, refined=True, l=0, d=0, namespaces=None,filtered=
     }
     dfGO = pd.DataFrame(data)
     dfGO['enrichment'] = dfGO['GO term'].map(enrichments)
+    dfGO=dfGO.round(6)
     dfGO = dfGO.sort_values(by='p-value', ascending=True)
     return dfGO
 
